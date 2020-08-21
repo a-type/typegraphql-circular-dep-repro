@@ -1,58 +1,54 @@
-import { ApolloServer, gql } from 'apollo-server-micro';
+import 'reflect-metadata';
+import { ApolloServer } from 'apollo-server-micro';
+import { buildSchema } from 'type-graphql';
+import { Container } from 'typedi';
+import { PrismaClient } from '@prisma/client';
+import {
+  UserRelationsResolver,
+  GroupRelationsResolver,
+  AccountRelationsResolver,
+  FundRelationsResolver,
+  CreateUserResolver,
+  CreateAccountResolver,
+  CreateGroupResolver,
+  CreateFundResolver,
+} from '../../@generated/type-graphql';
+import {
+  ViewerFieldsResolver,
+  ViewerQueryResolver,
+} from '../../graphql/schema';
 
-const typeDefs = gql`
-  interface Node {
-    id: ID!
-  }
+const prisma = new PrismaClient();
 
-  type PageInfo {
-    hasNextPage: Boolean!
-    hasPreviousPage: Boolean!
-    startCursor: String!
-    endCursor: String!
-  }
+const serverPromise = (async function() {
+  const schema = await buildSchema({
+    resolvers: [
+      CreateUserResolver,
+      CreateGroupResolver,
+      CreateAccountResolver,
+      CreateFundResolver,
+      UserRelationsResolver,
+      GroupRelationsResolver,
+      AccountRelationsResolver,
+      FundRelationsResolver,
+      ViewerFieldsResolver,
+      ViewerQueryResolver,
+    ],
+    // I think it's needed for typegraphql-prisma
+    validate: false,
+    emitSchemaFile: true,
+    // 3rd party dependency injection container
+    container: Container,
+  });
 
-  type User implements Node {
-    id: ID!
-    name: String!
-  }
+  return new ApolloServer({ schema, context: () => ({ prisma }) });
+})();
 
-  type Group implements Node {
-    id: ID!
-    name: String!
-  }
-
-  type Fund implements Node {
-    id: ID!
-    name: String!
-  }
-
-  type Account implements Node {
-    id: ID!
-    name: String!
-    stripeId: String!
-  }
-
-  type Viewer {
-    me: User!
-  }
-
-  type Query {
-    viewer: Viewer!
-  }
-`;
-
-const resolvers = {
-  Query: {
-    viewer: async () => {
-      return null;
-    },
-  },
-};
-
-const apolloServer = new ApolloServer({ typeDefs, resolvers });
-
-export default apolloServer.createHandler({ path: '/api/graphql' });
+export default async function(req: any, res: any) {
+  const apolloServer = await serverPromise;
+  const handler = apolloServer.createHandler({ path: '/api/graphql' });
+  return handler(req, res);
+}
 
 export const config = {
   api: {

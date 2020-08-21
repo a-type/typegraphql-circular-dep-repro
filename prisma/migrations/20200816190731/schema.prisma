@@ -1,0 +1,18 @@
+datasource db {
+  provider = "postgresql"
+  url = "***"
+}
+
+generator prisma_client {
+  provider = "prisma-client-js"
+}
+
+// This "Example" model has been generated for you by Nexus.
+// Nexus does this when you do not have any models defined.
+// For more detail and examples of working with your Prisma
+// Schema, refer to its complete docs at https://pris.ly/d/prisma-schema.
+
+model Todo {
+  id          Int    @default(autoincrement()) @id
+  description String
+}

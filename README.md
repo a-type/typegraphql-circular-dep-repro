@@ -1,5 +1,15 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Setup
+
+### Powershell
+
+```
+$env:DATABASE_URL='postgresql://postgres:postgres@localhost:5432/garden'
+npm run db:start
+npm run db:migrate
+```
+
 ## Getting Started
 
 First, run the development server:
