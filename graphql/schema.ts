@@ -1,7 +1,40 @@
 import { schema, use } from 'nexus';
 import { prisma } from 'nexus-plugin-prisma';
+import { auth } from 'nexus-plugin-auth0';
+import { shield, rule } from 'nexus-plugin-shield';
 
 use(prisma({ features: { crud: true } }));
+
+use(
+  auth({
+    auth0Audience: process.env.AUTH0_AUDIENCE,
+    auth0Domain: process.env.AUTH0_DOMAIN,
+  }),
+);
+
+const isAuthenticated = rule({ cache: 'contextual' })(
+  async (_parent, _args, ctx: NexusContext) => {
+    const userId = ctx?.token?.sub;
+    return Boolean(userId);
+  },
+);
+
+const rules = {
+  Query: {
+    viewer: isAuthenticated,
+  },
+  Mutation: {
+    createOneUser: isAuthenticated,
+    createOneGroup: isAuthenticated,
+    createOneAccount: isAuthenticated,
+  },
+};
+
+use(
+  shield({
+    rules,
+  }),
+);
 
 schema.objectType({
   name: 'User',

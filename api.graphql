@@ -112,6 +112,7 @@ type User {
 
 input UserCreateInput {
   accounts: AccountCreateManyWithoutUserInput
+  authSubject: String!
   groups: GroupCreateManyWithoutUsersInput
   id: String
   name: String!
@@ -128,6 +129,7 @@ input UserCreateOneWithoutAccountsInput {
 }
 
 input UserCreateWithoutAccountsInput {
+  authSubject: String!
   groups: GroupCreateManyWithoutUsersInput
   id: String
   name: String!
@@ -135,11 +137,13 @@ input UserCreateWithoutAccountsInput {
 
 input UserCreateWithoutGroupsInput {
   accounts: AccountCreateManyWithoutUserInput
+  authSubject: String!
   id: String
   name: String!
 }
 
 input UserWhereUniqueInput {
+  authSubject: String
   id: String
 }
 
