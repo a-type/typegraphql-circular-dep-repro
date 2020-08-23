@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es2016",
     "lib": ["dom", "dom.iterable", "esnext", "ESNext.AsyncIterable", "es2018"],
     "plugins": [
       {
         "name": "nexus/typescript-language-service"
       }
     ],
-    "typeRoots": ["node_modules/@types", "@types"],
+    "typeRoots": ["node_modules/@types", "types"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,

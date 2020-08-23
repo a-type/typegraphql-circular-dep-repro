@@ -4,13 +4,7 @@ datasource db {
 }
 
 generator prisma_client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["aggregateApi"]
-}
-
-generator typegraphql {
-  provider = "node node_modules/typegraphql-prisma/generator.js"
-  output   = "../@generated/type-graphql"
+  provider = "prisma-client-js"
 }
 
 model User {

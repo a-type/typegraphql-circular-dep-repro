@@ -1,45 +1,89 @@
-import 'reflect-metadata';
-import {
-  ObjectType,
-  ID,
-  Field,
-  InputType,
-  Resolver,
-  Query,
-  Root,
-  FieldResolver,
-  Args,
-  Ctx,
-} from 'type-graphql';
-import { User } from '../@generated/type-graphql';
-import { Context } from './types';
+import { schema, use } from 'nexus';
+import { prisma } from 'nexus-plugin-prisma';
 
-@ObjectType()
-export class Viewer {
-  @Field((type) => User)
-  user: User;
-}
+use(prisma({ features: { crud: true } }));
 
-@Resolver((of) => Viewer)
-export class ViewerFieldsResolver {
-  @FieldResolver()
-  async user(@Ctx() { prisma, token }: Context): Promise<User | null> {
-    if (!token) return null;
+schema.objectType({
+  name: 'User',
+  definition(t) {
+    t.model.id();
+    t.model.name();
+    t.model.groups();
+    t.model.accounts();
+  },
+});
 
-    return await prisma.user.findOne({
-      where: {
-        id: token.uid,
+schema.objectType({
+  name: 'Group',
+  definition(t) {
+    t.model.id();
+    t.model.name();
+    t.model.funds();
+    t.model.users();
+  },
+});
+
+schema.objectType({
+  name: 'Fund',
+  definition(t) {
+    t.model.id();
+    t.model.name();
+    t.model.group();
+  },
+});
+
+schema.objectType({
+  name: 'Account',
+  definition(t) {
+    t.model.id();
+    t.model.name();
+    t.model.stripeId();
+    t.model.user();
+  },
+});
+
+schema.objectType({
+  name: 'Viewer',
+  definition(t) {
+    t.field('user', {
+      nullable: false,
+      type: 'User',
+      resolve(_root, _args, ctx) {
+        return ctx.db.user.findOne({
+          where: {
+            id: 'foo',
+          },
+        });
       },
     });
-  }
-}
+  },
+});
 
-@Resolver()
-export class ViewerQueryResolver {
-  @Query((returns) => Viewer, { nullable: true })
-  async viewer(@Ctx() { prisma, token }: Context): Promise<Viewer | null> {
-    if (!token) return null;
+schema.extendType({
+  type: 'Query',
+  definition(t) {
+    t.field('ok', {
+      nullable: false,
+      type: 'Boolean',
+      resolve() {
+        return true;
+      },
+    });
+    t.field('viewer', {
+      nullable: true,
+      type: 'Viewer',
+      resolve() {
+        return null; // TODO
+      },
+    });
+  },
+});
 
-    return new Viewer();
-  }
-}
+schema.extendType({
+  type: 'Mutation',
+  definition(t) {
+    t.crud.createOneUser();
+    t.crud.createOneGroup();
+    t.crud.createOneAccount();
+  },
+});
