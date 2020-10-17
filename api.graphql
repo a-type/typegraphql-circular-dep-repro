@@ -95,7 +95,7 @@ scalar Json
 type Mutation {
   createOneAccount(data: AccountCreateInput!): Account!
   createOneGroup(data: GroupCreateInput!): Group!
-  createOneUser(data: UserCreateInput!): User!
+  register(input: RegisterInput): User!
 }
 
 type Query {
@@ -103,18 +103,14 @@ type Query {
   viewer: Viewer
 }
 
+input RegisterInput {
+  name: String!
+}
+
 type User {
   accounts(after: AccountWhereUniqueInput, before: AccountWhereUniqueInput, first: Int, last: Int): [Account!]!
   groups(after: GroupWhereUniqueInput, before: GroupWhereUniqueInput, first: Int, last: Int): [Group!]!
   id: String!
-  name: String!
-}
-
-input UserCreateInput {
-  accounts: AccountCreateManyWithoutUserInput
-  authSubject: String!
-  groups: GroupCreateManyWithoutUsersInput
-  id: String
   name: String!
 }
 

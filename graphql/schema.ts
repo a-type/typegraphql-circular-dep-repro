@@ -8,7 +8,7 @@ use(prisma({ features: { crud: true } }));
 use(
   auth({
     auth0Audience: process.env.AUTH0_AUDIENCE,
-    auth0Domain: process.env.AUTH0_DOMAIN,
+    auth0Domain: process.env.NEXT_APP_AUTH0_DOMAIN,
   }),
 );
 
@@ -24,9 +24,11 @@ const rules = {
     viewer: isAuthenticated,
   },
   Mutation: {
-    createOneUser: isAuthenticated,
     createOneGroup: isAuthenticated,
     createOneAccount: isAuthenticated,
+    // may seem counter-intuitive, but isAuthenticated
+    // only checks for an auth0 token
+    register: isAuthenticated,
   },
 };
 
@@ -112,11 +114,36 @@ schema.extendType({
   },
 });
 
+schema.inputObjectType({
+  name: 'RegisterInput',
+  definition(t) {
+    t.field('name', {
+      nullable: false,
+      type: 'String',
+    });
+  },
+});
+
 schema.extendType({
   type: 'Mutation',
   definition(t) {
-    t.crud.createOneUser();
     t.crud.createOneGroup();
     t.crud.createOneAccount();
+    t.field('register', {
+      nullable: false,
+      type: 'User',
+      args: {
+        input: 'RegisterInput',
+      },
+      resolve(_, args, ctx) {
+        // create a user, linking the auth0 id
+        return ctx.db.user.create({
+          data: {
+            name: args.input.name,
+            authSubject: ctx.token.sub,
+          },
+        });
+      },
+    });
   },
 });
